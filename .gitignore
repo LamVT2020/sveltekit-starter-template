@@ -1,0 +1,39 @@
+# Node & SvelteKit
+node_modules/
+.svelte-kit/
+build/
+dist/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# SQLite Database & Storage
+data/
+logs/
+backups/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+prisma/*.db
+prisma/*.db-journal
+prisma/prisma/*.db
+
+# Logs & OS
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Test Coverage
+coverage/
+.nyc_output/
