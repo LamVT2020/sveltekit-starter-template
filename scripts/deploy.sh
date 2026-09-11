@@ -3,10 +3,10 @@
 # ==============================================================================
 # 🚀 SvelteKit Starter Template - Production Automated Deployment Script
 # ==============================================================================
-# Hướng dẫn sử dụng trên VPS:
+# Usage on VPS:
 #   git clone git@github.com-github-thanhlam2020:LamVT2020/sveltekit-starter-template.git
 #   cd sveltekit-starter-template
-#   ./scripts/deploy.sh (hoặc: npm run deploy)
+#   ./scripts/deploy.sh (or: npm run deploy)
 # ==============================================================================
 
 set -eo pipefail
@@ -26,7 +26,7 @@ echo "   🚀 SVELTEKIT STARTER - AUTOMATED PRODUCTION DEPLOYMENT       "
 echo "================================================================="
 echo -e "${C_RESET}"
 
-# 0. Xác định thư mục dự án
+# 0. Resolve project working directory
 if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]:-}" ]; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
@@ -34,17 +34,17 @@ else
     PROJECT_DIR="$(pwd)"
 fi
 cd "$PROJECT_DIR"
-echo -e "${C_YELLOW}📍 Thư mục làm việc:${C_RESET} $PROJECT_DIR"
+echo -e "${C_YELLOW}📍 Working directory:${C_RESET} $PROJECT_DIR"
 
-# 1. Kiểm tra môi trường cơ bản (Node.js & npm)
+# 1. Verify runtime environment (Node.js & npm)
 if ! command -v node &> /dev/null; then
-    echo -e "${C_RED}❌ Lỗi: Node.js chưa được cài đặt trên máy chủ!${C_RESET}"
-    echo "  Vui lòng cài đặt Node.js (phiên bản khuyến nghị >= 18 hoặc 20)."
+    echo -e "${C_RED}❌ Error: Node.js is not installed on this server!${C_RESET}"
+    echo "  Please install Node.js (recommended version >= 18 or 20 LTS)."
     exit 1
 fi
 
 if ! command -v npm &> /dev/null; then
-    echo -e "${C_RED}❌ Lỗi: npm chưa được cài đặt trên máy chủ!${C_RESET}"
+    echo -e "${C_RED}❌ Error: npm is not installed on this server!${C_RESET}"
     exit 1
 fi
 
@@ -52,7 +52,7 @@ NODE_VERSION=$(node -v)
 NPM_VERSION=$(npm -v)
 echo -e "${C_GREEN}✔ Node.js:${C_RESET} $NODE_VERSION | ${C_GREEN}npm:${C_RESET} $NPM_VERSION"
 
-# Hàm đọc giá trị trong file .env
+# Helper function to read variable value from .env
 get_env_val() {
     local key="$1"
     if [ -f ".env" ]; then
@@ -60,7 +60,7 @@ get_env_val() {
     fi
 }
 
-# Hàm tạo chuỗi ngẫu nhiên bảo mật
+# Helper function to generate cryptographically secure random string
 generate_secret() {
     if command -v openssl &>/dev/null; then
         openssl rand -hex 32
@@ -69,28 +69,28 @@ generate_secret() {
     fi
 }
 
-# 2. Xử lý file .env & Kiểm tra / Báo cáo cấu hình
-echo -e "\n${C_CYAN}⚙️ Bước 1/7: Kiểm tra và chuẩn hóa cấu hình (.env)...${C_RESET}"
+# 2. Process .env configuration & perform configuration audit
+echo -e "\n${C_CYAN}⚙️ Step 1/7: Inspecting and standardizing configuration (.env)...${C_RESET}"
 
 if [ ! -f ".env" ]; then
     if [ -f ".env.example" ]; then
-        echo -e "${C_YELLOW}ℹ File .env chưa tồn tại. Đang tự động sao chép từ .env.example...${C_RESET}"
+        echo -e "${C_YELLOW}ℹ File .env not found. Automatically copying from .env.example...${C_RESET}"
         cp .env.example .env
     else
-        echo -e "${C_RED}❌ Lỗi: Không tìm thấy .env hoặc .env.example!${C_RESET}"
+        echo -e "${C_RED}❌ Error: Neither .env nor .env.example was found!${C_RESET}"
         exit 1
     fi
 fi
 
-# Đảm bảo PORT được định nghĩa (mặc định 3000 cho sveltekit-starter-template)
+# Ensure PORT is defined (default 3000 for sveltekit-starter-template)
 APP_PORT="$(get_env_val PORT)"
 if [ -z "$APP_PORT" ]; then
     APP_PORT="3000"
     echo "PORT=3000" >> .env
-    echo -e "${C_GREEN}✔ Đã bổ sung PORT=3000 vào .env${C_RESET}"
+    echo -e "${C_GREEN}✔ Appended PORT=3000 to .env${C_RESET}"
 fi
 
-# Tự động sinh AUTH_SECRET nếu đang rỗng hoặc mang giá trị placeholder
+# Auto-generate AUTH_SECRET if placeholder or empty
 AUTH_SECRET_VAL="$(get_env_val AUTH_SECRET)"
 if [ -z "$AUTH_SECRET_VAL" ] || [[ "$AUTH_SECRET_VAL" == *"change-this"* ]] || [[ "$AUTH_SECRET_VAL" == *"starter-template"* ]]; then
     NEW_SECRET="$(generate_secret)"
@@ -99,11 +99,11 @@ if [ -z "$AUTH_SECRET_VAL" ] || [[ "$AUTH_SECRET_VAL" == *"change-this"* ]] || [
     else
         echo "AUTH_SECRET=\"$NEW_SECRET\"" >> .env
     fi
-    echo -e "${C_GREEN}✔ Đã tự động tạo mã bảo mật ngẫu nhiên cho AUTH_SECRET${C_RESET}"
+    echo -e "${C_GREEN}✔ Generated secure random AUTH_SECRET${C_RESET}"
 fi
 
-# --- AUDIT CẤU HÌNH ---
-echo -e "\n${C_BOLD}${C_MAGENTA}📋 BẢNG KIỂM TRA CẤU HÌNH (CONFIGURATION AUDIT):${C_RESET}"
+# --- CONFIGURATION AUDIT ---
+echo -e "\n${C_BOLD}${C_MAGENTA}📋 CONFIGURATION AUDIT REPORT:${C_RESET}"
 
 MISSING_REQUIRED=0
 MISSING_OPTIONAL=0
@@ -128,93 +128,93 @@ audit_config() {
         if [ ${#val} -gt 24 ]; then
             masked_val="${val:0:8}...${val: -4}"
         fi
-        echo -e "  ${C_GREEN}✔ [ĐÃ CÓ]${C_RESET} ${C_BOLD}${key}${C_RESET} = ${masked_val} (${desc})"
+        echo -e "  ${C_GREEN}✔ [CONFIGURED]${C_RESET} ${C_BOLD}${key}${C_RESET} = ${masked_val} (${desc})"
     else
         if [ "$level" = "REQUIRED" ]; then
-            echo -e "  ${C_RED}✖ [CẦN ĐIỀN]${C_RESET} ${C_BOLD}${key}${C_RESET} - ${desc}"
+            echo -e "  ${C_RED}✖ [REQUIRED]${C_RESET} ${C_BOLD}${key}${C_RESET} - ${desc}"
             MISSING_REQUIRED=$((MISSING_REQUIRED + 1))
             MISSING_KEYS+=("$key ($desc)")
         else
-            echo -e "  ${C_YELLOW}⚠ [TÙY CHỌN]${C_RESET} ${C_BOLD}${key}${C_RESET} - ${desc}"
+            echo -e "  ${C_YELLOW}⚠ [OPTIONAL]${C_RESET} ${C_BOLD}${key}${C_RESET} - ${desc}"
             MISSING_OPTIONAL=$((MISSING_OPTIONAL + 1))
-            MISSING_KEYS+=("$key (Tùy chọn: $desc)")
+            MISSING_KEYS+=("$key (Optional: $desc)")
         fi
     fi
 }
 
-echo -e "${C_CYAN}▶ 1. Runtime & Hệ thống:${C_RESET}"
-audit_config "PORT" "REQUIRED" "Cổng dịch vụ web (Target: $APP_PORT)"
-audit_config "DATABASE_URL" "REQUIRED" "Đường dẫn SQLite database"
-audit_config "APP_ORIGIN" "OPTIONAL" "Địa chỉ truy cập (e.g. http://vps-ip:3000 hoặc https://yourdomain.com)"
+echo -e "${C_CYAN}▶ 1. Runtime & System:${C_RESET}"
+audit_config "PORT" "REQUIRED" "Web service port (Target: $APP_PORT)"
+audit_config "DATABASE_URL" "REQUIRED" "SQLite database connection string"
+audit_config "APP_ORIGIN" "OPTIONAL" "Application URL (e.g. http://vps-ip:3000 or https://yourdomain.com)"
 
-echo -e "${C_CYAN}▶ 2. Bảo mật & Xác thực:${C_RESET}"
-audit_config "AUTH_SECRET" "REQUIRED" "Khóa bí mật Auth"
+echo -e "${C_CYAN}▶ 2. Security & Authentication:${C_RESET}"
+audit_config "AUTH_SECRET" "REQUIRED" "Auth encryption secret"
 
-echo -e "${C_CYAN}▶ 3. Trí tuệ nhân tạo (AI Engine):${C_RESET}"
-audit_config "AI_PROVIDER" "REQUIRED" "Provider AI (gemini)"
-audit_config "AI_MODEL" "REQUIRED" "Model AI (gemini-2.0-flash)"
+echo -e "${C_CYAN}▶ 3. Artificial Intelligence (AI Engine):${C_RESET}"
+audit_config "AI_PROVIDER" "REQUIRED" "Primary AI Provider (gemini)"
+audit_config "AI_MODEL" "REQUIRED" "AI Model identifier (gemini-2.0-flash)"
 audit_config "GEMINI_API_KEY" "OPTIONAL" "Google Gemini API Key"
 
-echo -e "${C_CYAN}▶ 4. Giám sát & Phân tích:${C_RESET}"
+echo -e "${C_CYAN}▶ 4. Monitoring & Telemetry:${C_RESET}"
 audit_config "GOOGLE_ANALYTICS_ID" "OPTIONAL" "Google Analytics Tracking ID"
 
 if [ "$MISSING_REQUIRED" -gt 0 ] || [ "$MISSING_OPTIONAL" -gt 0 ]; then
     echo -e "\n${C_YELLOW}┌────────────────────────────────────────────────────────────────────────┐${C_RESET}"
-    echo -e "${C_YELLOW}│ 💡 HƯỚNG DẪN CẤU HÌNH BỔ SUNG:                                         │${C_RESET}"
-    echo -e "${C_YELLOW}│ Để điền các thông tin còn thiếu, bạn chạy:                             │${C_RESET}"
+    echo -e "${C_YELLOW}│ 💡 CONFIGURATION GUIDE:                                                │${C_RESET}"
+    echo -e "${C_YELLOW}│ To update missing credentials, edit your environment file:             │${C_RESET}"
     echo -e "${C_YELLOW}│   ${C_BOLD}nano .env${C_RESET}${C_YELLOW}                                                           │${C_RESET}"
-    echo -e "${C_YELLOW}│ Sau khi lưu file (Ctrl+O, Enter, Ctrl+X), khởi động lại bằng:          │${C_RESET}"
+    echo -e "${C_YELLOW}│ After saving (Ctrl+O, Enter, Ctrl+X), reload the service with:         │${C_RESET}"
     echo -e "${C_YELLOW}│   ${C_BOLD}pm2 restart ecosystem.config.cjs --update-env${C_RESET}${C_YELLOW}                      │${C_RESET}"
     echo -e "${C_YELLOW}└────────────────────────────────────────────────────────────────────────┘${C_RESET}"
 fi
 
-# 3. Tạo thư mục dữ liệu cần thiết & Sao lưu nếu có db cũ
-echo -e "\n${C_CYAN}📦 Bước 2/7: Chuẩn bị thư mục dữ liệu và sao lưu...${C_RESET}"
+# 3. Create required data folders and backup database if present
+echo -e "\n${C_CYAN}📦 Step 2/7: Preparing directories and snapshots...${C_RESET}"
 mkdir -p data logs backups
 
 if [ -f "prisma/dev.db" ] || [ -f "dev.db" ]; then
     if grep -q '"backup"' package.json 2>/dev/null; then
-        echo -e "${C_CYAN}  Đang tạo bản sao lưu snapshot database...${C_RESET}"
+        echo -e "${C_CYAN}  Creating database backup snapshot...${C_RESET}"
         npm run backup 2>/dev/null || true
     fi
 fi
 
-# 4. Kéo code mới nếu là repo Git đã clone trước đó
+# 4. Pull latest git commits if running inside a cloned repository
 if [ -d ".git" ]; then
-    echo -e "\n${C_CYAN}📥 Bước 3/7: Kiểm tra cập nhật từ Git...${C_RESET}"
+    echo -e "\n${C_CYAN}📥 Step 3/7: Checking for Git updates...${C_RESET}"
     CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
-    git pull origin "$CURRENT_BRANCH" 2>/dev/null || echo -e "${C_YELLOW}  Bỏ qua git pull (mã nguồn vừa clone hoặc có local changes)${C_RESET}"
+    git pull origin "$CURRENT_BRANCH" 2>/dev/null || echo -e "${C_YELLOW}  Skipped git pull (fresh clone or local modifications)${C_RESET}"
 fi
 
-# 5. Cài đặt các gói phụ thuộc (Dependencies / Modules)
-echo -e "\n${C_CYAN}📦 Bước 4/7: Đang cài đặt các module npm (dependencies)...${C_RESET}"
+# 5. Install production dependencies
+echo -e "\n${C_CYAN}📦 Step 4/7: Installing npm dependencies...${C_RESET}"
 npm install --no-audit --no-fund
 
-# 6. Đồng bộ Prisma Database & Seed dữ liệu người dùng ban đầu
-echo -e "\n${C_CYAN}🗄️ Bước 5/7: Đồng bộ cấu trúc Database (Prisma) và tài khoản ban đầu...${C_RESET}"
+# 6. Synchronize Prisma Database & seed initial accounts
+echo -e "\n${C_CYAN}🗄️ Step 5/7: Synchronizing Prisma schema and initializing users...${C_RESET}"
 npx prisma generate
 npx prisma db push --skip-generate
 
 if grep -q '"seed:users"' package.json 2>/dev/null; then
-    echo -e "${C_CYAN}  Đang khởi tạo tài khoản quản trị viên / demo...${C_RESET}"
+    echo -e "${C_CYAN}  Seeding administrative / demo accounts...${C_RESET}"
     npm run seed:users 2>/dev/null || true
 fi
 
-# 7. Build ứng dụng SvelteKit Production Bundle
-echo -e "\n${C_CYAN}🛠️ Bước 6/7: Đang build SvelteKit bundle cho production...${C_RESET}"
+# 7. Build SvelteKit production bundle
+echo -e "\n${C_CYAN}🛠️ Step 6/7: Building SvelteKit production bundle...${C_RESET}"
 npm run build
 
 if [ ! -f "build/index.js" ]; then
-    echo -e "${C_RED}❌ Lỗi: Build thất bại, không tìm thấy file build/index.js!${C_RESET}"
+    echo -e "${C_RED}❌ Error: Build failed, build/index.js was not generated!${C_RESET}"
     exit 1
 fi
-echo -e "${C_GREEN}✔ Build hoàn tất thành công (build/index.js sẵn sàng)${C_RESET}"
+echo -e "${C_GREEN}✔ Build successful (build/index.js ready)${C_RESET}"
 
-# 8. Quản lý tiến trình PM2
-echo -e "\n${C_CYAN}⚡ Bước 7/7: Khởi động / Khởi động lại dịch vụ qua PM2...${C_RESET}"
+# 8. Manage PM2 runtime processes
+echo -e "\n${C_CYAN}⚡ Step 7/7: Starting / Reloading services via PM2...${C_RESET}"
 PM2_CMD="pm2"
 if ! command -v pm2 &> /dev/null; then
-    echo -e "${C_YELLOW}⚠ PM2 chưa cài đặt global. Đang thử cài đặt pm2 qua npm...${C_RESET}"
+    echo -e "${C_YELLOW}⚠ PM2 not installed globally. Attempting installation via npm...${C_RESET}"
     npm install -g pm2 2>/dev/null || true
     if ! command -v pm2 &> /dev/null; then
         PM2_CMD="npx pm2"
@@ -224,14 +224,14 @@ fi
 if [ -f "ecosystem.config.cjs" ]; then
     $PM2_CMD startOrRestart ecosystem.config.cjs --env production
     $PM2_CMD save 2>/dev/null || true
-    echo -e "${C_GREEN}✔ Đã cập nhật tiến trình PM2 thành công.${C_RESET}"
+    echo -e "${C_GREEN}✔ PM2 process state updated successfully.${C_RESET}"
 else
-    echo -e "${C_RED}❌ Lỗi: Không tìm thấy ecosystem.config.cjs!${C_RESET}"
+    echo -e "${C_RED}❌ Error: ecosystem.config.cjs not found!${C_RESET}"
     exit 1
 fi
 
-# 9. Health Check & Báo cáo tổng kết
-echo -e "\n${C_CYAN}🔍 Kiểm tra trạng thái hoạt động trên cổng ${APP_PORT}...${C_RESET}"
+# 9. Health check verification & final summary
+echo -e "\n${C_CYAN}🔍 Verifying service status on port ${APP_PORT}...${C_RESET}"
 sleep 3
 
 HEALTH_CHECK_URL="http://127.0.0.1:${APP_PORT}/"
@@ -239,20 +239,20 @@ HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_CHECK_URL" 2>/dev/
 
 echo -e "\n${C_BOLD}${C_GREEN}=================================================================${C_RESET}"
 if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "302" ] || [ "$HTTP_STATUS" = "307" ]; then
-    echo -e "${C_BOLD}${C_GREEN}   🎉 DEPLOYMENT THÀNH CÔNG!                                     ${C_RESET}"
-    echo -e "   Ứng dụng: ${C_BOLD}SvelteKit Starter${C_RESET} đang ONLINE trên cổng: ${C_BOLD}${APP_PORT}${C_RESET} (HTTP ${HTTP_STATUS})"
+    echo -e "${C_BOLD}${C_GREEN}   🎉 DEPLOYMENT SUCCESSFUL!                                     ${C_RESET}"
+    echo -e "   App: ${C_BOLD}SvelteKit Starter${C_RESET} is ONLINE on port: ${C_BOLD}${APP_PORT}${C_RESET} (HTTP ${HTTP_STATUS})"
 else
-    echo -e "${C_BOLD}${C_YELLOW}   ⚠ DEPLOYMENT ĐÃ CHẠY XONG (HTTP Status: ${HTTP_STATUS})                 ${C_RESET}"
-    echo -e "   Kiểm tra log bằng: ${C_BOLD}pm2 logs sveltekit-starter-template --lines 50${C_RESET}"
+    echo -e "${C_BOLD}${C_YELLOW}   ⚠ DEPLOYMENT COMPLETED (HTTP Status: ${HTTP_STATUS})                    ${C_RESET}"
+    echo -e "   Inspect runtime logs with: ${C_BOLD}pm2 logs sveltekit-starter-template --lines 50${C_RESET}"
 fi
-echo -e "   🌐 Địa chỉ nội bộ : http://127.0.0.1:${APP_PORT}"
-echo -e "   🌐 Địa chỉ công khai: http://<IP_CỦA_VPS>:${APP_PORT}"
+echo -e "   🌐 Local URL : http://127.0.0.1:${APP_PORT}"
+echo -e "   🌐 Public URL: http://<VPS_IP>:${APP_PORT}"
 echo -e "${C_BOLD}${C_GREEN}=================================================================${C_RESET}"
 
 if [ "${#MISSING_KEYS[@]}" -gt 0 ]; then
-    echo -e "\n${C_YELLOW}📌 DANH SÁCH CẤU HÌNH BẠN CẦN TỰ BỔ SUNG TRONG .env:${C_RESET}"
+    echo -e "\n${C_YELLOW}📌 PENDING CONFIGURATIONS TO COMPLETE IN .env:${C_RESET}"
     for item in "${MISSING_KEYS[@]}"; do
         echo -e "  • ${item}"
     done
-    echo -e "\n${C_CYAN}👉 Chạy lệnh: ${C_BOLD}nano .env${C_RESET}${C_CYAN} để cập nhật, sau đó chạy lại deploy hoặc: ${C_BOLD}pm2 restart ecosystem.config.cjs --update-env${C_RESET}\n"
+    echo -e "\n${C_CYAN}👉 Run: ${C_BOLD}nano .env${C_RESET}${C_CYAN} to update, then re-run deploy or: ${C_BOLD}pm2 restart ecosystem.config.cjs --update-env${C_RESET}\n"
 fi
