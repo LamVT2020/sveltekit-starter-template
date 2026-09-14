@@ -5,10 +5,11 @@ dotenv.config();
 
 const envSchema = z.object({
 	NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-	PORT: z.coerce.number().default(3000),
-	APP_ORIGIN: z.string().default('http://localhost:3000'),
+	PORT: z.coerce.number().default(3005),
+	APP_ORIGIN: z.string().default('http://localhost:3005'),
 
 	DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+	CONFIG_DIR: z.string().optional().default('./configs'),
 	DATA_DIR: z.string().default('./data'),
 	LOG_DIR: z.string().default('./logs'),
 	BACKUP_DIR: z.string().default('./backups'),
@@ -22,7 +23,7 @@ const envSchema = z.object({
 		.default('starter-template-super-secret-key-32chars'),
 
 	AI_PROVIDER: z.string().default('gemini'),
-	AI_MODEL: z.string().default('gemini-2.0-flash'),
+	AI_MODEL: z.string().default('gemini-3.7-flash'),
 	GEMINI_API_KEY: z.string().optional().default('')
 });
 
@@ -31,6 +32,7 @@ export const env = envSchema.parse({
 	PORT: process.env.PORT,
 	APP_ORIGIN: process.env.APP_ORIGIN,
 	DATABASE_URL: process.env.DATABASE_URL || 'file:./prisma/dev.db',
+	CONFIG_DIR: process.env.CONFIG_DIR,
 	DATA_DIR: process.env.DATA_DIR,
 	LOG_DIR: process.env.LOG_DIR,
 	BACKUP_DIR: process.env.BACKUP_DIR,

@@ -1,0 +1,39 @@
+services:
+  starter-template:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sveltekit-starter-template:latest
+    container_name: sveltekit-starter-web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3005:3005"
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - HOST=0.0.0.0
+      - DATABASE_URL=file:/app/data/starter-template.db
+    env_file:
+      - path: .env
+        required: false
+      - path: /home/deploy/apps/sveltekit-starter-template/.env
+        required: false
+      - path: /home/deploy/apps/starter-template/.env
+        required: false
+      - path: /home/deploy/config/sveltekit-starter-template/.env
+        required: false
+      - path: /home/deploy/config/starter-template/.env
+        required: false
+      - path: /home/deploy/configs/starter-template/.env
+        required: false
+      - path: /home/deploy/configs/sveltekit-starter-template/.env
+        required: false
+    volumes:
+      - ${DATA_DIR:-./data}:/app/data
+      - ${LOG_DIR:-./logs}:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3005/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

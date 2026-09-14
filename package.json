@@ -23,7 +23,8 @@
 		"db:studio": "prisma studio",
 		"seed:users": "tsx scripts/seed-users.ts",
 		"backup": "tsx scripts/backup-db.ts",
-		"deploy": "./scripts/deploy.sh"
+		"deploy": "./scripts/deploy.sh",
+		"deploy:docker": "./scripts/deploy-docker.sh"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.20.0",
