@@ -5,17 +5,43 @@ const fs = require('fs');
 const path = require('path');
 
 // Safely load .env without external dependencies
+const loadedEnv = {};
+
 try {
-  const envPath = path.resolve(__dirname, '.env');
-  if (fs.existsSync(envPath)) {
+  const possiblePaths = [
+    process.env.ENV_FILE,
+    process.env.CONFIG_DIR ? path.join(process.env.CONFIG_DIR, '.env') : null,
+    path.resolve(__dirname, '.env'),
+    '/home/deploy/configs/starter-template/.env',
+    '/home/deploy/configs/starter-template.env',
+    '/home/deploy/configs/starter-template',
+    '/home/deploy/configs/.env',
+    '/home/deploy/config/starter-template/.env',
+    '/home/deploy/config/starter-template.env',
+    '/home/deploy/config/starter-template',
+    '/home/deploy/config/.env'
+  ].filter(Boolean);
+
+  let envPath = null;
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      envPath = p;
+      break;
+    }
+  }
+
+  if (envPath) {
     const lines = fs.readFileSync(envPath, 'utf8').split('\n');
     for (const line of lines) {
       const match = line.match(/^\s*([A-Za-z0-9_]+)\s*=\s*(.*)?\s*$/);
-      if (match && !process.env[match[1]]) {
+      if (match) {
         let val = (match[2] || '').trim();
         if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
           val = val.slice(1, -1);
+        } else {
+          val = val.replace(/\s*#.*$/, '').trim();
         }
+        loadedEnv[match[1]] = val;
         process.env[match[1]] = val;
       }
     }
@@ -35,8 +61,9 @@ module.exports = {
       watch: false,
       max_memory_restart: '500M',
       env: {
-        NODE_ENV: 'production',
-        PORT: process.env.PORT || 3000
+        ...loadedEnv,
+        NODE_ENV: loadedEnv.NODE_ENV || 'production',
+        PORT: loadedEnv.PORT || process.env.PORT || 3005
       }
     }
   ]

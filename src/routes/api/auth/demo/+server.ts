@@ -1,9 +1,14 @@
-import { json, type RequestHandler } from '@sveltejs/kit';
+import { error, json, type RequestHandler } from '@sveltejs/kit';
 import prisma from '$server/db/client.js';
 import { hashPassword } from '$server/auth/password.js';
 import { createSession } from '$server/auth/session.js';
 
 export const POST: RequestHandler = async ({ request, url, cookies, getClientAddress }) => {
+	const isDemoEnabled = (process.env.ENABLE_DEMO_LOGIN ?? 'true').toLowerCase() === 'true';
+	if (!isDemoEnabled) {
+		throw error(403, 'Demo login is disabled');
+	}
+
 	let body: Record<string, unknown> = {};
 	try {
 		body = await request.json();

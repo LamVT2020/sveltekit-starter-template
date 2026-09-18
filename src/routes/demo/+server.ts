@@ -1,9 +1,14 @@
-import { redirect, type RequestHandler } from '@sveltejs/kit';
+import { error, redirect, type RequestHandler } from '@sveltejs/kit';
 import prisma from '$server/db/client.js';
 import { hashPassword } from '$server/auth/password.js';
 import { createSession } from '$server/auth/session.js';
 
 export const GET: RequestHandler = async ({ request, url, cookies, getClientAddress }) => {
+	const isDemoEnabled = (process.env.ENABLE_DEMO_LOGIN ?? 'true').toLowerCase() === 'true';
+	if (!isDemoEnabled) {
+		throw error(403, 'Demo login is disabled');
+	}
+
 	const roleParam = (url.searchParams.get('role') || 'user').toLowerCase();
 	const isAdmin = roleParam === 'admin';
 

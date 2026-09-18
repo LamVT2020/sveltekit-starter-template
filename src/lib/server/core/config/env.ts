@@ -21,6 +21,7 @@ const envSchema = z.object({
 		.string()
 		.min(16, 'AUTH_SECRET must be at least 16 characters for security')
 		.default('starter-template-super-secret-key-32chars'),
+	ENABLE_DEMO_LOGIN: z.boolean().default(true),
 
 	AI_PROVIDER: z.string().default('gemini'),
 	AI_MODEL: z.string().default('gemini-3.7-flash'),
@@ -43,6 +44,7 @@ export const env = envSchema.parse({
 		process.env.SESSION_SECRET ||
 		process.env.APP_SECRET ||
 		'starter-template-super-secret-key-32chars',
+	ENABLE_DEMO_LOGIN: (process.env.ENABLE_DEMO_LOGIN ?? 'true').toLowerCase() === 'true',
 	AI_PROVIDER: process.env.AI_PROVIDER,
 	AI_MODEL: process.env.AI_MODEL,
 	GEMINI_API_KEY: process.env.GEMINI_API_KEY

@@ -149,6 +149,7 @@ audit_config "APP_ORIGIN" "OPTIONAL" "Application URL (e.g. http://vps-ip:3000 o
 
 echo -e "${C_CYAN}▶ 2. Security & Authentication:${C_RESET}"
 audit_config "AUTH_SECRET" "REQUIRED" "Auth encryption secret"
+audit_config "ENABLE_DEMO_LOGIN" "OPTIONAL" "Enable demo quick login buttons (true/false, default: true)"
 
 echo -e "${C_CYAN}▶ 3. Artificial Intelligence (AI Engine):${C_RESET}"
 audit_config "AI_PROVIDER" "REQUIRED" "Primary AI Provider (gemini)"
@@ -222,7 +223,7 @@ if ! command -v pm2 &> /dev/null; then
 fi
 
 if [ -f "ecosystem.config.cjs" ]; then
-    $PM2_CMD startOrRestart ecosystem.config.cjs --env production
+    $PM2_CMD restart ecosystem.config.cjs --update-env || $PM2_CMD startOrRestart ecosystem.config.cjs --env production --update-env
     $PM2_CMD save 2>/dev/null || true
     echo -e "${C_GREEN}✔ PM2 process state updated successfully.${C_RESET}"
 else

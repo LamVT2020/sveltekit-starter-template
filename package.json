@@ -24,7 +24,9 @@
 		"seed:users": "tsx scripts/seed-users.ts",
 		"backup": "tsx scripts/backup-db.ts",
 		"deploy": "./scripts/deploy.sh",
-		"deploy:docker": "./scripts/deploy-docker.sh"
+		"deploy:docker": "./scripts/deploy-docker.sh",
+		"update": "bash scripts/update.sh",
+		"update:env": "bash scripts/update-env.sh"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.20.0",

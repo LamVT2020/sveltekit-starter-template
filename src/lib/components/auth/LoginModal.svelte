@@ -20,6 +20,7 @@
 	let localError = $state<string | null>(null);
 
 	const activeError = $derived(localError || authModal.error);
+	const isDemoEnabled = $derived((page.data.enableDemoLogin ?? true) === true);
 
 	function fillAccount(type: 'admin' | 'demo') {
 		email = type === 'admin' ? 'admin@example.com' : 'demo@example.com';
@@ -83,6 +84,7 @@
 	}
 
 	async function handleQuickLogin(role: 'admin' | 'demo') {
+		if (!isDemoEnabled) return;
 		quickLoading = role;
 		localError = null;
 
@@ -187,72 +189,74 @@
 			</div>
 
 			<!-- 1-Click Demo & Admin Quick Accounts Banner -->
-			<div
-				class="mb-5 space-y-3 rounded-2xl border border-indigo-200/70 bg-indigo-50/70 p-4 dark:border-indigo-900/60 dark:bg-indigo-950/40"
-			>
-				<div class="flex items-center justify-between">
-					<div class="flex items-center gap-1.5">
-						<Key class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-						<span class="text-xs font-bold text-indigo-900 dark:text-indigo-200"
-							>Demo Accounts</span
+			{#if isDemoEnabled}
+				<div
+					class="mb-5 space-y-3 rounded-2xl border border-indigo-200/70 bg-indigo-50/70 p-4 dark:border-indigo-900/60 dark:bg-indigo-950/40"
+				>
+					<div class="flex items-center justify-between">
+						<div class="flex items-center gap-1.5">
+							<Key class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+							<span class="text-xs font-bold text-indigo-900 dark:text-indigo-200"
+								>Demo Accounts</span
+							>
+						</div>
+						<span class="font-mono text-[11px] text-slate-500 dark:text-slate-400"
+							>pass: 12345678</span
 						>
 					</div>
-					<span class="font-mono text-[11px] text-slate-500 dark:text-slate-400"
-						>pass: 12345678</span
-					>
-				</div>
 
-				<div class="flex flex-wrap items-center gap-2">
-					<button
-						type="button"
-						onclick={() => handleQuickLogin('admin')}
-						disabled={quickLoading !== null}
-						class="flex cursor-pointer items-center gap-1.5 rounded-xl border border-purple-300 bg-purple-100/80 px-3 py-1.5 text-xs font-bold text-purple-700 shadow-xs transition hover:bg-purple-200 disabled:opacity-50 dark:border-purple-800 dark:bg-purple-950/70 dark:text-purple-300"
-						title="1-Click Login as Admin"
-					>
-						{#if quickLoading === 'admin'}
-							<span class="inline-block h-3 w-3 animate-spin rounded-full border-2 border-purple-700 border-t-transparent"></span>
-						{:else}
-							<span>⚡ 1-Click Admin</span>
-						{/if}
-						<span class="rounded-md bg-purple-600 px-1.5 py-0.5 text-[9px] font-extrabold text-white">ADMIN</span>
-					</button>
+					<div class="flex flex-wrap items-center gap-2">
+						<button
+							type="button"
+							onclick={() => handleQuickLogin('admin')}
+							disabled={quickLoading !== null}
+							class="flex cursor-pointer items-center gap-1.5 rounded-xl border border-purple-300 bg-purple-100/80 px-3 py-1.5 text-xs font-bold text-purple-700 shadow-xs transition hover:bg-purple-200 disabled:opacity-50 dark:border-purple-800 dark:bg-purple-950/70 dark:text-purple-300"
+							title="1-Click Login as Admin"
+						>
+							{#if quickLoading === 'admin'}
+								<span class="inline-block h-3 w-3 animate-spin rounded-full border-2 border-purple-700 border-t-transparent"></span>
+							{:else}
+								<span>⚡ 1-Click Admin</span>
+							{/if}
+							<span class="rounded-md bg-purple-600 px-1.5 py-0.5 text-[9px] font-extrabold text-white">ADMIN</span>
+						</button>
 
-					<button
-						type="button"
-						onclick={() => handleQuickLogin('demo')}
-						disabled={quickLoading !== null}
-						class="flex cursor-pointer items-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 shadow-xs transition hover:bg-slate-50 disabled:opacity-50 dark:border-indigo-800 dark:bg-slate-800 dark:text-indigo-300"
-						title="1-Click Login as Demo"
-					>
-						{#if quickLoading === 'demo'}
-							<span class="inline-block h-3 w-3 animate-spin rounded-full border-2 border-indigo-700 border-t-transparent"></span>
-						{:else}
-							<span>⚡ 1-Click Demo</span>
-						{/if}
-						<span class="rounded-md bg-indigo-600 px-1.5 py-0.5 text-[9px] font-extrabold text-white">USER</span>
-					</button>
-				</div>
+						<button
+							type="button"
+							onclick={() => handleQuickLogin('demo')}
+							disabled={quickLoading !== null}
+							class="flex cursor-pointer items-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 shadow-xs transition hover:bg-slate-50 disabled:opacity-50 dark:border-indigo-800 dark:bg-slate-800 dark:text-indigo-300"
+							title="1-Click Login as Demo"
+						>
+							{#if quickLoading === 'demo'}
+								<span class="inline-block h-3 w-3 animate-spin rounded-full border-2 border-indigo-700 border-t-transparent"></span>
+							{:else}
+								<span>⚡ 1-Click Demo</span>
+							{/if}
+							<span class="rounded-md bg-indigo-600 px-1.5 py-0.5 text-[9px] font-extrabold text-white">USER</span>
+						</button>
+					</div>
 
-				<div class="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
-					<span>Auto-fill:</span>
-					<button
-						type="button"
-						onclick={() => fillAccount('admin')}
-						class="cursor-pointer font-mono font-bold text-purple-600 hover:underline dark:text-purple-400"
-					>
-						admin@example.com
-					</button>
-					<span>•</span>
-					<button
-						type="button"
-						onclick={() => fillAccount('demo')}
-						class="cursor-pointer font-mono font-bold text-indigo-600 hover:underline dark:text-indigo-400"
-					>
-						demo@example.com
-					</button>
+					<div class="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+						<span>Auto-fill:</span>
+						<button
+							type="button"
+							onclick={() => fillAccount('admin')}
+							class="cursor-pointer font-mono font-bold text-purple-600 hover:underline dark:text-purple-400"
+						>
+							admin@example.com
+						</button>
+						<span>•</span>
+						<button
+							type="button"
+							onclick={() => fillAccount('demo')}
+							class="cursor-pointer font-mono font-bold text-indigo-600 hover:underline dark:text-indigo-400"
+						>
+							demo@example.com
+						</button>
+					</div>
 				</div>
-			</div>
+			{/if}
 
 			<!-- Error Alert -->
 			{#if activeError}
