@@ -121,10 +121,16 @@ npm test
 
 ## 🚢 Production Operations & VPS Management
 
-The repository provides 3 standardized commands for production operations:
-
+#### A. Khi chạy với PM2 (Node.js trực tiếp trên VPS):
 | Command | Script | Purpose & Workflow |
 | :--- | :--- | :--- |
 | **`npm run deploy`** | `./scripts/deploy.sh` | **First-time Deployment**: Verifies Node/PM2, audits `.env` variables, installs dependencies, migrates SQLite DB, seeds accounts, builds production bundle, and starts PM2. |
 | **`npm run update`** | `./scripts/update.sh` | **Code & Schema Update**: Backs up DB snapshot $\rightarrow$ pulls latest git commits $\rightarrow$ updates dependencies $\rightarrow$ runs Prisma schema migrations & user seeds $\rightarrow$ builds SvelteKit bundle $\rightarrow$ reloads PM2 with `--update-env`. |
 | **`npm run update:env`** | `./scripts/update-env.sh` | **Instant `.env` Reload**: Runs in **~1 second without rebuilding**! Detects external config, ensures admin accounts, and reloads PM2 with `--update-env` (ideal for toggling `ENABLE_DEMO_LOGIN`, changing ports, or updating secrets). |
+
+#### B. Khi chạy với Docker / Docker Compose:
+| Command | Script | Purpose & Workflow |
+| :--- | :--- | :--- |
+| **`npm run deploy:docker`** | `./scripts/deploy-docker.sh` | **First-time Docker Setup**: Prepares persistent volumes, verifies `.env`, builds Docker image, launches containers via Docker Compose, and runs health checks. |
+| **`npm run update:docker`** | `./scripts/update-docker.sh` | **Docker Code & Image Update**: Backs up DB snapshot $\rightarrow$ `git pull` latest commits $\rightarrow$ `docker compose up -d --build` $\rightarrow$ verifies health check. |
+| **`npm run update:docker:env`** | `./scripts/update-docker-env.sh` | **Docker Instant `.env` Reload**: Recreates containers with new `.env` in **~2 seconds without rebuilding image** (`docker compose up -d --force-recreate`). |

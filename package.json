@@ -26,7 +26,9 @@
 		"deploy": "./scripts/deploy.sh",
 		"deploy:docker": "./scripts/deploy-docker.sh",
 		"update": "bash scripts/update.sh",
-		"update:env": "bash scripts/update-env.sh"
+		"update:env": "bash scripts/update-env.sh",
+		"update:docker": "bash scripts/update-docker.sh",
+		"update:docker:env": "bash scripts/update-docker-env.sh"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.20.0",
