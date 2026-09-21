@@ -134,3 +134,29 @@ npm test
 | **`npm run deploy:docker`** | `./scripts/deploy-docker.sh` | **First-time Docker Setup**: Prepares persistent volumes, verifies `.env`, builds Docker image, launches containers via Docker Compose, and runs health checks. |
 | **`npm run update:docker`** | `./scripts/update-docker.sh` | **Docker Code & Image Update**: Backs up DB snapshot $\rightarrow$ `git pull` latest commits $\rightarrow$ `docker compose up -d --build` $\rightarrow$ verifies health check. |
 | **`npm run update:docker:env`** | `./scripts/update-docker-env.sh` | **Docker Instant `.env` Reload**: Recreates containers with new `.env` in **~2 seconds without rebuilding image** (`docker compose up -d --force-recreate`). |
+
+---
+
+## 🔄 CI/CD Automation Standards
+
+Mọi dự án khởi tạo từ template này đều tuân thủ kiến trúc **CI/CD hai tầng chuẩn hóa** qua GitHub Actions:
+
+```text
+git push origin main
+       │
+       ▼
+[ 🧪 CI Quality Gates ] ──► Prisma Validate/Generate ──► Svelte Check ──► Lint/Prettier ──► Tests ──► Build
+       │
+       ▼ (Pass 100% trên nhánh main)
+[ 🚀 CD Remote Deploy ] ──► SSH VPS (Secrets: VPS_HOST, VPS_USER, VPS_SSH_KEY) ──► Chạy deploy-docker.sh
+```
+
+* **Zero-Downtime Safe Deploy**: Ngăn chặn tuyệt đối việc đưa code lỗi lên máy chủ production khi build/test thất bại.
+* **Manual Dispatch**: Hỗ trợ trigger triển khai thủ công từ GitHub Actions UI (`workflow_dispatch`).
+* **Volume Isolation**: Database SQLite luôn được mount ra ngoài thư mục `/home/deploy/data/<app>/` để không bao giờ mất dữ liệu khi build lại container.
+
+---
+
+## 📄 License
+
+MIT License © 2026. Designed for rapid, reliable SvelteKit multi-project engineering.
