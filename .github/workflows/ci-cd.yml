@@ -67,9 +67,13 @@ jobs:
     steps:
       - name: Check Deployment Secrets
         id: check-secrets
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
-          if [ -z "${{ secrets.VPS_HOST }}" ]; then
-            echo "::warning ::Secret VPS_HOST is not configured in Repository Secrets! Skipping remote SSH deployment. Go to Settings -> Secrets and variables -> Actions to add VPS_HOST, VPS_USER, and VPS_SSH_KEY."
+          if [ -z "$VPS_HOST" ] || [ -z "$VPS_USER" ] || [ -z "$VPS_SSH_KEY" ]; then
+            echo "::warning ::Deployment secrets (VPS_HOST, VPS_USER, VPS_SSH_KEY) are not fully configured in Repository Secrets! Skipping remote SSH deployment. Go to Settings -> Secrets and variables -> Actions to configure them."
             echo "configured=false" >> $GITHUB_OUTPUT
           else
             echo "configured=true" >> $GITHUB_OUTPUT
