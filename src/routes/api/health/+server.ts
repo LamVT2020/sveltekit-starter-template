@@ -1,21 +1,21 @@
-import { json } from '@sveltejs/kit';
-import type { RequestHandler } from './$types.js';
-import prisma from '$server/db/client.js';
+import { json } from "@sveltejs/kit";
+import type { RequestHandler } from "./$types.js";
+import prisma from "$server/db/client.js";
 
 export const GET: RequestHandler = async () => {
-	let dbStatus = 'disconnected';
+	let dbStatus = "disconnected";
 	try {
 		await prisma.$queryRaw`SELECT 1`;
-		dbStatus = 'connected';
-	} catch (error) {
-		dbStatus = 'error';
+		dbStatus = "connected";
+	} catch {
+		dbStatus = "error";
 	}
 
 	return json({
-		status: 'ok',
+		status: "ok",
 		timestamp: new Date().toISOString(),
 		uptime: process.uptime(),
 		database: dbStatus,
-		version: '1.0.0'
+		version: "1.0.0",
 	});
 };

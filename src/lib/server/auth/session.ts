@@ -1,13 +1,13 @@
-import crypto from 'node:crypto';
-import prisma from '../db/client.js';
+import crypto from "node:crypto";
+import prisma from "../db/client.js";
 
 const SESSION_EXPIRATION_DAYS = 30;
 
 export async function createSession(
 	userId: string,
-	meta?: { ipAddress?: string; userAgent?: string }
+	meta?: { ipAddress?: string; userAgent?: string },
 ) {
-	const sessionToken = crypto.randomBytes(32).toString('hex');
+	const sessionToken = crypto.randomBytes(32).toString("hex");
 	const expiresAt = new Date(Date.now() + SESSION_EXPIRATION_DAYS * 24 * 60 * 60 * 1000);
 
 	const session = await prisma.session.create({
@@ -16,7 +16,7 @@ export async function createSession(
 			userId,
 			expiresAt,
 			ipAddress: meta?.ipAddress,
-			userAgent: meta?.userAgent
+			userAgent: meta?.userAgent,
 		},
 		include: {
 			user: {
@@ -26,10 +26,10 @@ export async function createSession(
 					email: true,
 					role: true,
 					image: true,
-					isActive: true
-				}
-			}
-		}
+					isActive: true,
+				},
+			},
+		},
 	});
 
 	return session;
@@ -48,10 +48,10 @@ export async function validateSessionToken(token: string) {
 					email: true,
 					role: true,
 					image: true,
-					isActive: true
-				}
-			}
-		}
+					isActive: true,
+				},
+			},
+		},
 	});
 
 	if (!session) return null;
@@ -73,7 +73,7 @@ export async function validateSessionToken(token: string) {
 		await prisma.session
 			.update({
 				where: { id: session.id },
-				data: { expiresAt: newExpiresAt }
+				data: { expiresAt: newExpiresAt },
 			})
 			.catch(() => {});
 	}

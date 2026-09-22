@@ -1,38 +1,31 @@
 <script lang="ts">
-	import { authModal } from '$lib/state/auth-modal.svelte.js';
-	import { invalidateAll, goto } from '$app/navigation';
-	import { page } from '$app/state';
-	import {
-		X,
-		ArrowRight,
-		ShieldCheck,
-		Key,
-		Eye,
-		EyeOff,
-		AlertCircle
-	} from 'lucide-svelte';
+	import { authModal } from "$lib/state/auth-modal.svelte.js";
+	import { invalidateAll, goto } from "$app/navigation";
+	import { page } from "$app/state";
+	import { X, ArrowRight, ShieldCheck, Key, Eye, EyeOff, AlertCircle } from "lucide-svelte";
 
-	let email = $state('demo@example.com');
-	let password = $state('12345678');
+	let email = $state("demo@example.com");
+	let password = $state("12345678");
 	let showPassword = $state(false);
 	let loading = $state(false);
-	let quickLoading = $state<'admin' | 'demo' | null>(null);
+	let quickLoading = $state<"admin" | "demo" | null>(null);
 	let localError = $state<string | null>(null);
 
 	const activeError = $derived(localError || authModal.error);
 	const isDemoEnabled = $derived((page.data.enableDemoLogin ?? true) === true);
 
-	function fillAccount(type: 'admin' | 'demo') {
-		email = type === 'admin' ? 'admin@example.com' : 'demo@example.com';
-		password = '12345678';
+	function fillAccount(type: "admin" | "demo") {
+		email = type === "admin" ? "admin@example.com" : "demo@example.com";
+		password = "12345678";
 		localError = null;
 	}
 
 	function handleClose() {
 		authModal.close();
 		localError = null;
-		if (page.url.pathname === '/login') {
-			const target = authModal.redirectUrl && authModal.redirectUrl !== '/login' ? authModal.redirectUrl : '/';
+		if (page.url.pathname === "/login") {
+			const target =
+				authModal.redirectUrl && authModal.redirectUrl !== "/login" ? authModal.redirectUrl : "/";
 			goto(target);
 		}
 	}
@@ -40,7 +33,7 @@
 	async function handleSubmit(e: Event) {
 		e.preventDefault();
 		if (!email.trim() || !password) {
-			localError = 'Please enter both email and password';
+			localError = "Please enter both email and password";
 			return;
 		}
 
@@ -48,13 +41,13 @@
 		loading = true;
 
 		try {
-			const res = await fetch('/api/auth/login', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+			const res = await fetch("/api/auth/login", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					email: email.trim(),
-					password
-				})
+					password,
+				}),
 			});
 
 			const data = await res.json().catch(() => ({}));
@@ -62,35 +55,35 @@
 			if (res.ok && data.success) {
 				const redirectTarget = authModal.redirectUrl;
 				authModal.close();
-				email = '';
-				password = '';
+				email = "";
+				password = "";
 				localError = null;
 
-				if (redirectTarget && redirectTarget !== '/login') {
+				if (redirectTarget && redirectTarget !== "/login") {
 					await goto(redirectTarget);
-				} else if (page.url.pathname === '/login') {
-					await goto('/dashboard');
+				} else if (page.url.pathname === "/login") {
+					await goto("/dashboard");
 				} else {
 					await invalidateAll();
 				}
 			} else {
-				localError = data.error || 'Invalid email or password. Please try again.';
+				localError = data.error || "Invalid email or password. Please try again.";
 			}
 		} catch {
-			localError = 'Login failed. Please check network connection.';
+			localError = "Login failed. Please check network connection.";
 		} finally {
 			loading = false;
 		}
 	}
 
-	async function handleQuickLogin(role: 'admin' | 'demo') {
+	async function handleQuickLogin(role: "admin" | "demo") {
 		if (!isDemoEnabled) return;
 		quickLoading = role;
 		localError = null;
 
 		try {
 			const res = await fetch(`/api/auth/demo?role=${role}`, {
-				method: 'POST'
+				method: "POST",
 			});
 
 			const data = await res.json().catch(() => ({}));
@@ -98,22 +91,22 @@
 			if (res.ok && data.success) {
 				const redirectTarget = authModal.redirectUrl;
 				authModal.close();
-				email = '';
-				password = '';
+				email = "";
+				password = "";
 				localError = null;
 
-				if (redirectTarget && redirectTarget !== '/login') {
+				if (redirectTarget && redirectTarget !== "/login") {
 					await goto(redirectTarget);
-				} else if (page.url.pathname === '/login') {
-					await goto('/dashboard');
+				} else if (page.url.pathname === "/login") {
+					await goto("/dashboard");
 				} else {
 					await invalidateAll();
 				}
 			} else {
-				localError = data.error || 'Quick login failed.';
+				localError = data.error || "Quick login failed.";
 			}
 		} catch {
-			localError = 'Quick login failed. Please try again.';
+			localError = "Quick login failed. Please try again.";
 		} finally {
 			quickLoading = null;
 		}
@@ -122,7 +115,7 @@
 
 <svelte:window
 	onkeydown={(e) => {
-		if (authModal.isOpen && e.key === 'Escape') {
+		if (authModal.isOpen && e.key === "Escape") {
 			handleClose();
 		}
 	}}
@@ -144,7 +137,7 @@
 			tabindex="-1"
 			aria-label="Close dialog"
 			onkeydown={(e) => {
-				if (e.key === 'Escape') handleClose();
+				if (e.key === "Escape") handleClose();
 			}}
 		></div>
 
@@ -208,32 +201,42 @@
 					<div class="flex flex-wrap items-center gap-2">
 						<button
 							type="button"
-							onclick={() => handleQuickLogin('admin')}
+							onclick={() => handleQuickLogin("admin")}
 							disabled={quickLoading !== null}
 							class="flex cursor-pointer items-center gap-1.5 rounded-xl border border-purple-300 bg-purple-100/80 px-3 py-1.5 text-xs font-bold text-purple-700 shadow-xs transition hover:bg-purple-200 disabled:opacity-50 dark:border-purple-800 dark:bg-purple-950/70 dark:text-purple-300"
 							title="1-Click Login as Admin"
 						>
-							{#if quickLoading === 'admin'}
-								<span class="inline-block h-3 w-3 animate-spin rounded-full border-2 border-purple-700 border-t-transparent"></span>
+							{#if quickLoading === "admin"}
+								<span
+									class="inline-block h-3 w-3 animate-spin rounded-full border-2 border-purple-700 border-t-transparent"
+								></span>
 							{:else}
 								<span>⚡ 1-Click Admin</span>
 							{/if}
-							<span class="rounded-md bg-purple-600 px-1.5 py-0.5 text-[9px] font-extrabold text-white">ADMIN</span>
+							<span
+								class="rounded-md bg-purple-600 px-1.5 py-0.5 text-[9px] font-extrabold text-white"
+								>ADMIN</span
+							>
 						</button>
 
 						<button
 							type="button"
-							onclick={() => handleQuickLogin('demo')}
+							onclick={() => handleQuickLogin("demo")}
 							disabled={quickLoading !== null}
 							class="flex cursor-pointer items-center gap-1.5 rounded-xl border border-indigo-200 bg-white px-3 py-1.5 text-xs font-bold text-indigo-700 shadow-xs transition hover:bg-slate-50 disabled:opacity-50 dark:border-indigo-800 dark:bg-slate-800 dark:text-indigo-300"
 							title="1-Click Login as Demo"
 						>
-							{#if quickLoading === 'demo'}
-								<span class="inline-block h-3 w-3 animate-spin rounded-full border-2 border-indigo-700 border-t-transparent"></span>
+							{#if quickLoading === "demo"}
+								<span
+									class="inline-block h-3 w-3 animate-spin rounded-full border-2 border-indigo-700 border-t-transparent"
+								></span>
 							{:else}
 								<span>⚡ 1-Click Demo</span>
 							{/if}
-							<span class="rounded-md bg-indigo-600 px-1.5 py-0.5 text-[9px] font-extrabold text-white">USER</span>
+							<span
+								class="rounded-md bg-indigo-600 px-1.5 py-0.5 text-[9px] font-extrabold text-white"
+								>USER</span
+							>
 						</button>
 					</div>
 
@@ -241,7 +244,7 @@
 						<span>Auto-fill:</span>
 						<button
 							type="button"
-							onclick={() => fillAccount('admin')}
+							onclick={() => fillAccount("admin")}
 							class="cursor-pointer font-mono font-bold text-purple-600 hover:underline dark:text-purple-400"
 						>
 							admin@example.com
@@ -249,7 +252,7 @@
 						<span>•</span>
 						<button
 							type="button"
-							onclick={() => fillAccount('demo')}
+							onclick={() => fillAccount("demo")}
 							class="cursor-pointer font-mono font-bold text-indigo-600 hover:underline dark:text-indigo-400"
 						>
 							demo@example.com
@@ -306,7 +309,7 @@
 					<div class="relative">
 						<input
 							id="modal-password"
-							type={showPassword ? 'text' : 'password'}
+							type={showPassword ? "text" : "password"}
 							bind:value={password}
 							placeholder="••••••••"
 							required
@@ -316,7 +319,7 @@
 							type="button"
 							onclick={() => (showPassword = !showPassword)}
 							class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
-							aria-label={showPassword ? 'Hide password' : 'Show password'}
+							aria-label={showPassword ? "Hide password" : "Show password"}
 						>
 							{#if showPassword}
 								<EyeOff class="h-4 w-4" />
@@ -333,7 +336,9 @@
 					class="w-full h-11 rounded-xl bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-500/25 hover:bg-indigo-700 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
 				>
 					{#if loading}
-						<span class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+						<span
+							class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+						></span>
 						<span>Signing In...</span>
 					{:else}
 						<span>Sign In with Password</span>
@@ -406,7 +411,9 @@
 			</p>
 
 			<!-- Security Badge -->
-			<div class="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-400">
+			<div
+				class="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-medium text-slate-400"
+			>
 				<ShieldCheck class="h-3.5 w-3.5 text-emerald-500" />
 				<span>Secure Argon2 / SHA-256 Authentication</span>
 			</div>

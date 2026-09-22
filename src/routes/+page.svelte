@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Badge } from '$components/index.js';
+	import { Button, Card, Badge } from "$components/index.js";
 </script>
 
 <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -32,7 +32,10 @@
 
 	<!-- Architecture Grid -->
 	<div class="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-		<Card title="⚡ Unified Env & Config" description="Strict Zod validation across 5 standard environment blocks.">
+		<Card
+			title="⚡ Unified Env & Config"
+			description="Strict Zod validation across 5 standard environment blocks."
+		>
 			<ul class="mt-3 space-y-1 text-xs text-slate-500 dark:text-slate-400 list-disc list-inside">
 				<li>Port, Origin, Database URL</li>
 				<li>Data, Log, and Backup directories</li>
@@ -41,7 +44,10 @@
 			</ul>
 		</Card>
 
-		<Card title="🛡️ Enterprise Auth & Security" description="Bcrypt 12 rounds, unicode NFKC normalization, role-based access.">
+		<Card
+			title="🛡️ Enterprise Auth & Security"
+			description="Bcrypt 12 rounds, unicode NFKC normalization, role-based access."
+		>
 			<ul class="mt-3 space-y-1 text-xs text-slate-500 dark:text-slate-400 list-disc list-inside">
 				<li>Pre-seeded demo & admin credentials</li>
 				<li>Sliding window session handling</li>
@@ -50,7 +56,10 @@
 			</ul>
 		</Card>
 
-		<Card title="🚀 7-Step Deployment Script" description="Automated zero-downtime deployment pipeline.">
+		<Card
+			title="🚀 7-Step Deployment Script"
+			description="Automated zero-downtime deployment pipeline."
+		>
 			<ul class="mt-3 space-y-1 text-xs text-slate-500 dark:text-slate-400 list-disc list-inside">
 				<li>Pre-deployment DB backup</li>
 				<li>Prisma push & auto-seeding</li>

@@ -1,17 +1,17 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
+import fs from "node:fs";
+import path from "node:path";
+import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-const backupDir = process.env.BACKUP_DIR || './backups';
-const retentionDays = parseInt(process.env.BACKUP_RETENTION_DAYS || '30', 10);
+const backupDir = process.env.BACKUP_DIR || "./backups";
+const retentionDays = parseInt(process.env.BACKUP_RETENTION_DAYS || "30", 10);
 
 async function runBackup() {
 	const now = new Date();
-	const yyyymmdd = now.toISOString().slice(0, 10).replace(/-/g, '');
-	const hhmmss = now.toTimeString().slice(0, 8).replace(/:/g, '');
+	const yyyymmdd = now.toISOString().slice(0, 10).replace(/-/g, "");
+	const hhmmss = now.toTimeString().slice(0, 8).replace(/:/g, "");
 	const timestamp = `${yyyymmdd}-${hhmmss}`;
 
 	if (!fs.existsSync(backupDir)) {
@@ -37,7 +37,7 @@ async function runBackup() {
 
 		let prunedCount = 0;
 		for (const file of files) {
-			if (file.startsWith('backup-app-') && file.endsWith('.db')) {
+			if (file.startsWith("backup-app-") && file.endsWith(".db")) {
 				const fullPath = path.join(backupDir, file);
 				const fileStat = fs.statSync(fullPath);
 				if (fileStat.mtimeMs < cutoff) {
@@ -51,7 +51,7 @@ async function runBackup() {
 			console.log(`[Backup] Cleaned up ${prunedCount} old backups.`);
 		}
 	} catch (error) {
-		console.error('[Backup] Backup failed:', error);
+		console.error("[Backup] Backup failed:", error);
 		process.exit(1);
 	} finally {
 		await prisma.$disconnect();

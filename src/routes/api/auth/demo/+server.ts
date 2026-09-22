@@ -1,12 +1,12 @@
-import { error, json, type RequestHandler } from '@sveltejs/kit';
-import prisma from '$server/db/client.js';
-import { hashPassword } from '$server/auth/password.js';
-import { createSession } from '$server/auth/session.js';
+import { error, json, type RequestHandler } from "@sveltejs/kit";
+import prisma from "$server/db/client.js";
+import { hashPassword } from "$server/auth/password.js";
+import { createSession } from "$server/auth/session.js";
 
 export const POST: RequestHandler = async ({ request, url, cookies, getClientAddress }) => {
-	const isDemoEnabled = (process.env.ENABLE_DEMO_LOGIN ?? 'true').toLowerCase() === 'true';
+	const isDemoEnabled = (process.env.ENABLE_DEMO_LOGIN ?? "true").toLowerCase() === "true";
 	if (!isDemoEnabled) {
-		throw error(403, 'Demo login is disabled');
+		throw error(403, "Demo login is disabled");
 	}
 
 	let body: Record<string, unknown> = {};
@@ -16,41 +16,41 @@ export const POST: RequestHandler = async ({ request, url, cookies, getClientAdd
 		// optional
 	}
 
-	const roleParam = (url.searchParams.get('role') || body.role || 'user').toString().toLowerCase();
-	const isAdmin = roleParam === 'admin';
+	const roleParam = (url.searchParams.get("role") || body.role || "user").toString().toLowerCase();
+	const isAdmin = roleParam === "admin";
 
-	const targetEmail = isAdmin ? 'admin@example.com' : 'demo@example.com';
-	const targetRole = isAdmin ? 'ADMIN' : 'USER';
-	const targetName = isAdmin ? 'Administrator' : 'Demo User';
+	const targetEmail = isAdmin ? "admin@example.com" : "demo@example.com";
+	const targetRole = isAdmin ? "ADMIN" : "USER";
+	const targetName = isAdmin ? "Administrator" : "Demo User";
 
 	let user = await prisma.user.findUnique({
-		where: { email: targetEmail }
+		where: { email: targetEmail },
 	});
 
 	if (!user) {
-		const passwordHash = await hashPassword('12345678');
+		const passwordHash = await hashPassword("12345678");
 		user = await prisma.user.create({
 			data: {
 				email: targetEmail,
 				name: targetName,
 				role: targetRole,
 				passwordHash,
-				isActive: true
-			}
+				isActive: true,
+			},
 		});
 	}
 
-	const userAgent = request.headers.get('user-agent') || undefined;
+	const userAgent = request.headers.get("user-agent") || undefined;
 	const ipAddress = getClientAddress();
 
 	const session = await createSession(user.id, { ipAddress, userAgent });
 
-	cookies.set('session_token', session.sessionToken, {
-		path: '/',
+	cookies.set("session_token", session.sessionToken, {
+		path: "/",
 		httpOnly: true,
-		sameSite: 'lax',
-		secure: process.env.NODE_ENV === 'production',
-		maxAge: 30 * 24 * 60 * 60
+		sameSite: "lax",
+		secure: process.env.NODE_ENV === "production",
+		maxAge: 30 * 24 * 60 * 60,
 	});
 
 	return json({
@@ -59,7 +59,7 @@ export const POST: RequestHandler = async ({ request, url, cookies, getClientAdd
 			id: user.id,
 			email: user.email,
 			name: user.name,
-			role: user.role
-		}
+			role: user.role,
+		},
 	});
 };

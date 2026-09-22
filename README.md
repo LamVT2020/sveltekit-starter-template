@@ -25,8 +25,9 @@ sveltekit-starter-template/
 ├── ecosystem.config.cjs          # PM2 configuration
 ├── docs/                         # Architecture documentation & playbooks
 │   ├── ARCHITECTURE.md           # Architectural layers specification
-│   └── promts/                   # AI prompt templates & engineering runbooks
+│   └── prompts/                  # AI prompt templates & engineering runbooks
 │       ├── README.md
+│       ├── DOCKER_CICD_WORKFLOW_PROMPTS.md
 │       ├── AI_FEATURE_BUILDER_PROMPTS.md
 │       └── PROJECT_HARDENING_PROMPTS.md
 ├── prisma/

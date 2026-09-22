@@ -4,7 +4,7 @@ class AuthModalState {
 	error = $state<string | null>(null);
 
 	open(options?: { redirectUrl?: string | null; error?: string | null } | string) {
-		if (typeof options === 'string') {
+		if (typeof options === "string") {
 			this.redirectUrl = options;
 			this.error = null;
 		} else {

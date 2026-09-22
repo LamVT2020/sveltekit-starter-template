@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { checkRateLimit } from '../../src/lib/server/security/rate-limit.js';
+import { describe, it, expect } from "vitest";
+import { checkRateLimit } from "../../src/lib/server/security/rate-limit.js";
 
-describe('Security Rate Limiter', () => {
-	it('should allow requests within limit and block when exceeded', () => {
-		const key = 'test-ip-123';
+describe("Security Rate Limiter", () => {
+	it("should allow requests within limit and block when exceeded", () => {
+		const key = "test-ip-123";
 		const options = { limit: 3, windowMs: 1000 };
 
 		const res1 = checkRateLimit(key, options);

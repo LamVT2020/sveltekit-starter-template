@@ -1,5 +1,5 @@
-import { redirect } from '@sveltejs/kit';
-import { UnauthorizedError, ForbiddenError } from '../core/errors/index.js';
+import { redirect } from "@sveltejs/kit";
+import { UnauthorizedError, ForbiddenError } from "../core/errors/index.js";
 
 export interface AuthLocals {
 	user?: {
@@ -20,12 +20,12 @@ export interface AuthLocals {
 /**
  * Requires an authenticated user session, otherwise redirects to /login or throws
  */
-export function requireUser(locals: AuthLocals, redirectUrl: string = '/login') {
+export function requireUser(locals: AuthLocals, redirectUrl: string = "/login") {
 	if (!locals.user) {
 		if (redirectUrl) {
 			throw redirect(303, redirectUrl);
 		}
-		throw new UnauthorizedError('You must be signed in to access this resource.');
+		throw new UnauthorizedError("You must be signed in to access this resource.");
 	}
 	return locals.user;
 }
@@ -33,7 +33,7 @@ export function requireUser(locals: AuthLocals, redirectUrl: string = '/login') 
 /**
  * Requires a specific role (e.g. ADMIN), otherwise redirects or throws 403 Forbidden
  */
-export function requireRole(locals: AuthLocals, role: string, redirectUrl: string = '/dashboard') {
+export function requireRole(locals: AuthLocals, role: string, redirectUrl: string = "/dashboard") {
 	const user = requireUser(locals);
 	if (user.role.toUpperCase() !== role.toUpperCase()) {
 		if (redirectUrl) {
@@ -44,6 +44,6 @@ export function requireRole(locals: AuthLocals, role: string, redirectUrl: strin
 	return user;
 }
 
-export function requireAdmin(locals: AuthLocals, redirectUrl: string = '/dashboard') {
-	return requireRole(locals, 'ADMIN', redirectUrl);
+export function requireAdmin(locals: AuthLocals, redirectUrl: string = "/dashboard") {
+	return requireRole(locals, "ADMIN", redirectUrl);
 }

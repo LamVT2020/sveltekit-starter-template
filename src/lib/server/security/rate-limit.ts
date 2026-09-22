@@ -12,7 +12,7 @@ export interface RateLimitOptions {
 
 export function checkRateLimit(
 	key: string,
-	options: RateLimitOptions = {}
+	options: RateLimitOptions = {},
 ): { allowed: boolean; remaining: number; resetAt: number } {
 	const limit = options.limit || 60;
 	const windowMs = options.windowMs || 60 * 1000;

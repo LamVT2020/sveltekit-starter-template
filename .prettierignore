@@ -1,0 +1,17 @@
+node_modules
+.svelte-kit
+build
+dist
+data
+logs
+backups
+*.db*
+package-lock.json
+.gitnexus
+.claude
+coverage
+.temp
+src/lib/components/ui
+prisma/migrations
+docs
+*.md

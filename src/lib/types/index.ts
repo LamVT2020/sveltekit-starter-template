@@ -2,7 +2,7 @@ export interface UserDto {
 	id: string;
 	email: string;
 	name: string | null;
-	role: 'USER' | 'ADMIN' | string;
+	role: "USER" | "ADMIN" | string;
 	image?: string | null;
 	createdAt: Date;
 }

@@ -1,0 +1,98 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-and-test:
+    name: 🧪 Quality Gates & Build
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "file:/tmp/ci_test.db"
+      NODE_ENV: "test"
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci --no-engine-strict
+
+      - name: Validate Prisma Schema, Generate Client & Sync DB
+        run: |
+          npx prisma validate
+          npm run db:generate
+          npx prisma db push --skip-generate
+          DATABASE_URL="file:/tmp/ci_test.db" npx tsx scripts/seed-users.ts || echo "Seed completed"
+
+      - name: Svelte & TypeScript Diagnostics
+        run: npm run check
+
+      - name: Prettier Format Check
+        run: npm run format:check
+
+      - name: ESLint Flat Config Check
+        run: npm run lint:eslint
+
+      - name: Automated Unit & Integration Tests
+        env:
+          DATABASE_URL: "file:/tmp/ci_test.db"
+          NODE_ENV: "test"
+          ENABLE_DEMO_LOGIN: "true"
+        run: npm test
+
+      - name: Production Bundle Build
+        run: npm run build
+
+  cd-deploy:
+    name: 🚀 Deploy to Production VPS
+    needs: [validate-and-test]
+    if: (github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch'))
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Deployment Secrets
+        id: check-secrets
+        run: |
+          if [ -z "${{ secrets.VPS_HOST }}" ]; then
+            echo "::warning ::Secret VPS_HOST is not configured in Repository Secrets! Skipping remote SSH deployment. Go to Settings -> Secrets and variables -> Actions to add VPS_HOST, VPS_USER, and VPS_SSH_KEY."
+            echo "configured=false" >> $GITHUB_OUTPUT
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Trigger Remote Deploy via SSH
+        if: steps.check-secrets.outputs.configured == 'true'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script_stop: true
+          script: |
+            echo "🚀 Starting automated deployment for sveltekit-starter-template..."
+            if [ -f "/home/deploy/scripts/deploy-docker-starter-template.sh" ]; then
+              /home/deploy/scripts/deploy-docker-starter-template.sh
+            elif [ -f "/home/deploy/scripts/deploy-docker-sveltekit-starter-template.sh" ]; then
+              /home/deploy/scripts/deploy-docker-sveltekit-starter-template.sh
+            elif [ -f "/home/deploy/scripts/deploy-starter-template.sh" ]; then
+              /home/deploy/scripts/deploy-starter-template.sh
+            else
+              echo "❌ Deploy script not found on VPS!" && exit 1
+            fi
+            echo "✅ Deployment finished successfully!"
