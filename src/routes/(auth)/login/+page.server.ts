@@ -2,7 +2,7 @@ import { fail, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types.js";
 import prisma from "$server/db/client.js";
 import { verifyPassword } from "$server/auth/password.js";
-import { createSession } from "$server/auth/session.js";
+import { createSession, getSessionCookieOptions } from "$server/auth/session.js";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (locals.user) {
@@ -12,7 +12,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies, getClientAddress }) => {
+	default: async (event) => {
+		const { request, cookies, getClientAddress } = event;
 		const data = await request.formData();
 		const email = (data.get("email") as string)?.trim().toLowerCase();
 		const password = data.get("password") as string;
@@ -43,13 +44,7 @@ export const actions: Actions = {
 
 		const session = await createSession(user.id, { ipAddress, userAgent });
 
-		cookies.set("session_token", session.sessionToken, {
-			path: "/",
-			httpOnly: true,
-			sameSite: "lax",
-			secure: process.env.NODE_ENV === "production",
-			maxAge: 30 * 24 * 60 * 60,
-		});
+		cookies.set("session_token", session.sessionToken, getSessionCookieOptions(event));
 
 		throw redirect(303, "/dashboard");
 	},

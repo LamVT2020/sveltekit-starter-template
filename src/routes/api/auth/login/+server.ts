@@ -1,9 +1,10 @@
 import { json, type RequestHandler } from "@sveltejs/kit";
 import prisma from "$server/db/client.js";
 import { verifyPassword } from "$server/auth/password.js";
-import { createSession } from "$server/auth/session.js";
+import { createSession, getSessionCookieOptions } from "$server/auth/session.js";
 
-export const POST: RequestHandler = async ({ request, cookies, getClientAddress }) => {
+export const POST: RequestHandler = async (event) => {
+	const { request, cookies, getClientAddress } = event;
 	let body: Record<string, unknown> = {};
 	try {
 		body = await request.json();
@@ -40,13 +41,7 @@ export const POST: RequestHandler = async ({ request, cookies, getClientAddress 
 
 	const session = await createSession(user.id, { ipAddress, userAgent });
 
-	cookies.set("session_token", session.sessionToken, {
-		path: "/",
-		httpOnly: true,
-		sameSite: "lax",
-		secure: process.env.NODE_ENV === "production",
-		maxAge: 30 * 24 * 60 * 60,
-	});
+	cookies.set("session_token", session.sessionToken, getSessionCookieOptions(event));
 
 	return json({
 		success: true,

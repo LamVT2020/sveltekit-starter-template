@@ -1,9 +1,10 @@
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 import prisma from "$server/db/client.js";
 import { hashPassword } from "$server/auth/password.js";
-import { createSession } from "$server/auth/session.js";
+import { createSession, getSessionCookieOptions } from "$server/auth/session.js";
 
-export const POST: RequestHandler = async ({ request, url, cookies, getClientAddress }) => {
+export const POST: RequestHandler = async (event) => {
+	const { request, url, cookies, getClientAddress } = event;
 	const isDemoEnabled = (process.env.ENABLE_DEMO_LOGIN ?? "true").toLowerCase() === "true";
 	if (!isDemoEnabled) {
 		throw error(403, "Demo login is disabled");
@@ -45,13 +46,7 @@ export const POST: RequestHandler = async ({ request, url, cookies, getClientAdd
 
 	const session = await createSession(user.id, { ipAddress, userAgent });
 
-	cookies.set("session_token", session.sessionToken, {
-		path: "/",
-		httpOnly: true,
-		sameSite: "lax",
-		secure: process.env.NODE_ENV === "production",
-		maxAge: 30 * 24 * 60 * 60,
-	});
+	cookies.set("session_token", session.sessionToken, getSessionCookieOptions(event));
 
 	return json({
 		success: true,
