@@ -31,6 +31,11 @@ services:
     volumes:
       - ${DATA_DIR:-./data}:/app/data
       - ${LOG_DIR:-./logs}:/app/logs
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:3005/api/health"]
       interval: 30s
