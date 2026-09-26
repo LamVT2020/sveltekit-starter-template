@@ -65,7 +65,14 @@ fi
 
 # 4. Rebuild image and recreate containers
 echo -e "\n${C_CYAN}🔨 Step 3/4: Building new image & restarting containers...${C_RESET}"
-$DOCKER_COMPOSE_CMD up -d --build
+CONTAINER_NAMES=$(grep -E '^\s*container_name:' docker-compose.yml 2>/dev/null | awk '{print $2}' || true)
+for c in $CONTAINER_NAMES; do
+    if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -Eq "^/?${c}\$"; then
+        echo -e "${C_YELLOW}  Cleaning up existing container: ${c}...${C_RESET}"
+        docker rm -f "${c}" 2>/dev/null || true
+    fi
+done
+$DOCKER_COMPOSE_CMD up -d --build --remove-orphans
 
 # 5. Health check verification
 echo -e "\n${C_CYAN}🔍 Step 4/4: Verifying container health on port ${APP_PORT}...${C_RESET}"

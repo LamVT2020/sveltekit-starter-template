@@ -31,7 +31,9 @@
 		"update": "bash scripts/update.sh",
 		"update:env": "bash scripts/update-env.sh",
 		"update:docker": "bash scripts/update-docker.sh",
-		"update:docker:env": "bash scripts/update-docker-env.sh"
+		"update:docker:env": "bash scripts/update-docker-env.sh",
+		"docker:update": "bash scripts/update-docker.sh",
+		"docker:update:env": "bash scripts/update-docker-env.sh"
 	},
 	"devDependencies": {
 		"@eslint/js": "^9.20.0",
