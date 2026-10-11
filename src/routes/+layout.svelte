@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import type { LayoutData } from "./$types.js";
-	import { Navbar, Footer, LoginModal } from "$components/index.js";
+	import { Navbar, Footer, LoginModal, DeploymentNotification } from "$components/index.js";
 	import "../app.css";
 
 	let { data, children }: { data: LayoutData; children: Snippet } = $props();
@@ -16,4 +16,5 @@
 	</main>
 	<Footer />
 	<LoginModal />
+	<DeploymentNotification />
 </div>

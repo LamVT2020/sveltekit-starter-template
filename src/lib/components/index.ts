@@ -5,3 +5,4 @@ export { default as Input } from "./ui/Input.svelte";
 export { default as Navbar } from "./layout/Navbar.svelte";
 export { default as Footer } from "./layout/Footer.svelte";
 export { default as LoginModal } from "./auth/LoginModal.svelte";
+export { default as DeploymentNotification } from "./DeploymentNotification.svelte";
