@@ -9,19 +9,28 @@ if [ "$(id -u)" = "0" ]; then
   chown -R node:node /app/data /app/logs 2>/dev/null || true
 fi
 
-# Sync database schema with Prisma
-if [ -d "/app/prisma/migrations" ] && [ "$(ls -A /app/prisma/migrations 2>/dev/null)" ]; then
-  echo ">>> [SvelteKitStarter] Applying database migrations..."
-  npx prisma migrate deploy || npx prisma db push --skip-generate
-else
-  echo ">>> [SvelteKitStarter] Synchronizing database schema..."
-  npx prisma db push --skip-generate
-fi
+run_as_node() {
+  if [ "$(id -u)" = "0" ]; then
+    gosu node "$@"
+  else
+    "$@"
+  fi
+}
 
-# Initialize standard demo & admin users
-if [ -f "/app/scripts/seed-users.ts" ]; then
-  echo ">>> [SvelteKitStarter] Seeding standard demo & admin accounts..."
-  npx tsx /app/scripts/seed-users.ts || echo ">>> [SvelteKitStarter] User seeding completed or skipped"
+# Sync database schema with Prisma
+if [ "${RUN_MIGRATIONS:-}" = "true" ] || { [ "${1:-}" = "node" ] && [ "${RUN_MIGRATIONS:-}" != "false" ]; }; then
+  echo ">>> [SvelteKitStarter] Synchronizing database schema..."
+  if [ -d "/app/prisma/migrations" ] && [ "$(ls -A /app/prisma/migrations 2>/dev/null)" ]; then
+    run_as_node npx --no-install prisma migrate deploy
+  else
+    run_as_node npx --no-install prisma db push --skip-generate
+  fi
+
+  # Initialize standard demo & admin users
+  if [ "${SEED_USERS:-false}" = "true" ] && [ -f "/app/scripts/seed-users.ts" ]; then
+    echo ">>> [SvelteKitStarter] Seeding standard demo & admin accounts..."
+    run_as_node npx --no-install tsx /app/scripts/seed-users.ts
+  fi
 fi
 
 # If started as root, drop privileges to node user
