@@ -40,6 +40,7 @@ fi
 # 3. Build first; existing containers keep running if build fails.
 echo "Building image before maintenance..."
 "${DOCKER_COMPOSE_CMD[@]}" build starter-template
+echo "Docker image built successfully."
 
 # 4. Snapshot the running web container's actual database and mounted data directory.
 # Stream new helper source: the running image need not contain it.

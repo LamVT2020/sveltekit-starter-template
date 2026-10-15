@@ -85,11 +85,15 @@ describe('SvelteKitStarter Docker deployment failure boundaries', () => {
     expect(r.commands[commandIndex('RUN_MIGRATIONS=true')]).toContain('SEED_USERS=false');
     expect(r.commands.some((line) => line.includes('rm -f'))).toBe(false);
     expect(r.commands).toContain('docker compose ps -q starter-template');
+    expect(r.stdout).toContain('Docker image built successfully.');
   });
   it.each(['pull', 'build', 'backup'])('keeps current containers running when %s fails', (failure) => {
     const r = updateFixture(failure);
     expect(r.status).not.toBe(0);
     expect(r.commands.some((line) => /compose (stop|up|run)|rm -f/.test(line))).toBe(false);
+    if (failure === 'build') {
+      expect(r.stdout).not.toContain('Docker image built successfully.');
+    }
   });
   it.each(['verify', 'schema'])('does not start new services after %s fails', (failure) => {
     const r = updateFixture(failure);
