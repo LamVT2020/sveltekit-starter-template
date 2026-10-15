@@ -52,12 +52,52 @@ fi
 echo "Building first-deployment image..."
 "${DOCKER_COMPOSE_CMD[@]}" build starter-template
 
+# Resolve host DATA_DIR and BACKUP_DIR
+PROJECT_NAME="starter-template"
+HOST_BACKUP_DIR=""
+HOST_DATA_DIR=""
+for env_candidate in .env /home/deploy/configs/"$PROJECT_NAME"/.env /home/deploy/apps/"$PROJECT_NAME"/.env; do
+    if [ -f "$env_candidate" ]; then
+        if [ -z "$HOST_BACKUP_DIR" ] && grep -q '^BACKUP_DIR=' "$env_candidate"; then
+            HOST_BACKUP_DIR=$(grep '^BACKUP_DIR=' "$env_candidate" | cut -d '=' -f2- | tr -d '"'\'' ' | head -n1)
+        fi
+        if [ -z "$HOST_DATA_DIR" ] && grep -q '^DATA_DIR=' "$env_candidate"; then
+            HOST_DATA_DIR=$(grep '^DATA_DIR=' "$env_candidate" | cut -d '=' -f2- | tr -d '"'\'' ' | head -n1)
+        fi
+    fi
+done
+
+if [ -z "$HOST_BACKUP_DIR" ]; then
+    if [ -d "/home/deploy/backups" ]; then
+        HOST_BACKUP_DIR="/home/deploy/backups/$PROJECT_NAME"
+    else
+        HOST_BACKUP_DIR="$PROJECT_DIR/backups"
+    fi
+fi
+
+if [ -z "$HOST_DATA_DIR" ]; then
+    if [ -d "/home/deploy/data/$PROJECT_NAME" ]; then
+        HOST_DATA_DIR="/home/deploy/data/$PROJECT_NAME"
+    else
+        HOST_DATA_DIR="$PROJECT_DIR/data"
+    fi
+fi
+
 # 5. The mount can contain an existing DB even without Compose containers.
 # Snapshot it before schema synchronization; a truly absent DB is initialized explicitly.
 PHASE=database-preparation
 DEPLOY_BACKUP_ID="$(date -u +%Y%m%dT%H%M%S)-$$-${RANDOM}"
 "${DOCKER_COMPOSE_CMD[@]}" run --rm --no-deps --user node --entrypoint node -e "DEPLOY_BACKUP_ID=$DEPLOY_BACKUP_ID" starter-template scripts/docker-db-backup.mjs --prepare-deploy
 "${DOCKER_COMPOSE_CMD[@]}" run --rm --no-deps --entrypoint /usr/local/bin/docker-entrypoint.sh -e RUN_MIGRATIONS=true -e SEED_USERS=false starter-template true
+
+# Archive verified snapshot to designated host BACKUP_DIR if one was prepared
+if [ -n "$HOST_DATA_DIR" ] && [ -f "$HOST_DATA_DIR/.deployment-backups/${DEPLOY_BACKUP_ID}.db" ]; then
+    mkdir -p "$HOST_BACKUP_DIR"
+    cp -p "$HOST_DATA_DIR/.deployment-backups/${DEPLOY_BACKUP_ID}.db" "$HOST_BACKUP_DIR/${DEPLOY_BACKUP_ID}.db"
+    if [ -f "$HOST_DATA_DIR/.deployment-backups/${DEPLOY_BACKUP_ID}.json" ]; then
+        cp -p "$HOST_DATA_DIR/.deployment-backups/${DEPLOY_BACKUP_ID}.json" "$HOST_BACKUP_DIR/${DEPLOY_BACKUP_ID}.json" 2>/dev/null || true
+    fi
+fi
 
 # 6. Start only after successful schema synchronization. No forced container deletion.
 PHASE=startup
